@@ -19,7 +19,7 @@ function do_replacements( $contents, $filename ) {
 	$valid_extensions_regex = implode( '|', $valid_extensions );
 	if ( ! preg_match( "/\.({$valid_extensions_regex})$/", $filename ) )
 		return $contents;
-
+	
 	// Special treatment for style.css
 	if ( in_array( $filename, array( 'style.css', 'style.scss' ), true ) ) {
 		$plugin_headers = array(
@@ -117,9 +117,9 @@ function _init() {
 		$your_plugin['author_uri'] = trim( $_REQUEST['wp_plugin_boilerplate_author_uri'] );
 	}
 
-	//$zip = new ZipArchive;
-	//$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
-	//$res = $zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
+	$zip = new ZipArchive;
+	$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
+	$zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
 
 	$prototypes_dir = dirname( __FILE__ ) . '/prototypes/';
 	$prototypes_map = array(
@@ -153,57 +153,26 @@ function _init() {
 		exec( sprintf( '%s pull origin master', escapeshellarg( $GIT_BIN ) ) );
 	}
 	exec( sprintf( '%s reset %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
-	var_dump( $output );
 	if ( $return ) {
 		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
 	}
 
-	die( 'okay so far' );
-
-	// These files are excluded when the boilerplate is generated.
-	$exclude_files = array(
-		'.editorconfig',
-		'.gitattributes',
-		'.gitignore',
-		'.jshintrc',
-		'.travis.yml',
-		'CHANGELOG.md',
-		'composer.json',
-		'CONTRIBUTING.md',
-		'Gruntfile.js',
-		'license.txt',
-		'package.json',
-		'README.md',
-		'.git',
-		'.tx',
-		'.DS_Store',
-		'.',
-		'..'
-	);
-
-	// These directories are excluded when the boilerplate is generated.
-	$exclude_directories = array( '.git', '.tx', 'bin', '.', '..' );
-
-	$iterator = new RecursiveDirectoryIterator( $prototype_dir );
+	$prototype_plugindir = $prototype_dir . $prototype['plugindir'];
+	$iterator = new RecursiveDirectoryIterator( $prototype_plugindir );
 	foreach ( new RecursiveIteratorIterator( $iterator ) as $filename ) {
-		if ( in_array( basename( $filename ), $exclude_files ) )
-			continue;
+		$local_filename = str_replace( trailingslashit( $prototype_plugindir ), '', $filename );
+		if ( in_array( $local_filename, array( '.', '..' ) ) )
+			continue; // Skip updir traversals
 
-		foreach ( $exclude_directories as $directory )
-			if ( strstr( $filename, "/{$directory}/" ) )
-				continue 2; // continue the parent foreach loop
-
-		$local_filename = str_replace( trailingslashit( $prototype_dir ), '', $filename );
-
-		if ( 'languages/_s.pot' == $local_filename )
+		if ( 'languages/' . $prototype['plugindir'] . '.pot' == $local_filename )
 			$local_filename = sprintf( 'languages/%s.pot', $your_plugin['slug'] );
 
 		$contents = file_get_contents( $filename );
-		$contents = do_replacements( $contents, $local_filename );
-		//$zip->addFromString( trailingslashit( $your_plugin['slug'] ) . $local_filename, $contents );
+		// $contents = do_replacements( $contents, $local_filename );
+		$zip->addFromString( trailingslashit( $your_plugin['slug'] ) . $local_filename, $contents );
 	}
 
-	//$zip->close();
+	$zip->close();
 
 	header( 'Content-type: application/zip' );
 	header( sprintf( 'Content-Disposition: attachment; filename="%s.zip"', $your_plugin['slug'] ) );
