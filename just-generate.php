@@ -3,7 +3,11 @@ error_reporting(E_ALL ^ E_NOTICE);
 @ini_set( 'display_errors', 'On' );
 @ini_set( 'error_reporting', E_ALL );
 
+require_once dirname( __FILE__ ) . '/wp-stubs.php';
+
 session_start();
+
+
 
 /**
  * Runs when looping through files contents, does the replacements fun stuff.
@@ -85,11 +89,11 @@ function _init() {
 	);
 
 	$your_plugin['name']  = trim( $_REQUEST['wp_plugin_boilerplate_name'] );
-	$your_plugin['slug']  = sanitize_title_with_dashes( $your_plugin['name'] );
-	//$your_plugin['wpcom'] = (bool) isset( $_REQUEST['can_i_haz_wpcom'] );
 
 	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_slug'] ) ) {
 		$your_plugin['slug'] = sanitize_title_with_dashes( $_REQUEST['wp_plugin_boilerplate_slug'] );
+	} else {
+		$your_plugin['slug']  = sanitize_title_with_dashes( $your_plugin['name'] );
 	}
 
 	// Let's check if the slug can be a valid function name.
@@ -99,6 +103,10 @@ function _init() {
 
 	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_description'] ) ) {
 		$your_plugin['description'] = trim( $_REQUEST['wp_plugin_boilerplate_description'] );
+	}
+
+	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_plugin_uri'] ) ) {
+		$your_plugin['uri'] = trim( $_REQUEST['wp_plugin_boilerplate_plugin_uri'] );
 	}
 
 	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_author'] ) ) {
@@ -113,7 +121,44 @@ function _init() {
 	//$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
 	//$res = $zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
 
-	$prototype_dir = dirname( __FILE__ ) . '/prototype/';
+	$prototypes_dir = dirname( __FILE__ ) . '/prototypes/';
+	$prototypes_map = array(
+		'wordpress-plugin' => array(
+			'name' => 'wordpress-plugin',
+			'upstream' => 'https://github.com/seb86/WordPress-Plugin-Boilerplate.git',
+			'checkout' => 'a52b6613109a2b8b773cb599c829d3775a82d6f1',
+			'plugindir' => 'wordpress-plugin-boilerplate',
+		),
+		// ... add the other types here
+	);
+
+	if ( empty( $_REQUEST['boilerplate'] ) || empty( $prototypes_map[$_REQUEST['boilerplate']] ) ) {
+		die( 'Invalid boilerplate type. Please go back and try again.' );
+	}
+
+	$prototype = $prototypes_map[$_REQUEST['boilerplate']];
+
+	// Update or download the boilerplate
+	$prototype_dir = $prototypes_dir . $prototype['name'] . '/';
+	if ( ! file_exists( $prototype_dir . '.git' ) ) {
+		// Let's clone it in
+		exec( sprintf( "git clone %s %s", escapeshellarg( $prototype['upstream'] ), escapeshellarg( $prototype_dir ) ), $output, $return );
+	}
+
+	$GIT_BIN = sprintf( 'GIT_DIR=%s.git GIT_WORK_TREE=%s git', escapeshellarg( $prototype_dir ), escapeshellarg( $prototype_dir ) );
+
+	// Checkout the needed hash, might need a pull if not exists
+	exec( sprintf( '%s reset %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	if ( $return ) {
+		exec( sprintf( '%s pull origin master', escapeshellarg( $GIT_BIN ) ) );
+	}
+	exec( sprintf( '%s reset %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	var_dump( $output );
+	if ( $return ) {
+		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
+	}
+
+	die( 'okay so far' );
 
 	// These files are excluded when the boilerplate is generated.
 	$exclude_files = array(
@@ -213,7 +258,7 @@ _init();
 			<input type="hidden" name="wp_plugin_boilerplate_generate" value="1" />
 
 			<div class="form-group">
-				<label for="which-boilerpate">What type of WordPress plugin are we developing?</label>
+				<label for="which-boilerplate">What type of WordPress plugin are we developing?</label>
 				<div class="radio">
 					<label><input type="radio" name="boilerplate" value="wordpress-plugin" checked="checked"> WordPress Plugin</label>
 				</div>
@@ -246,6 +291,11 @@ _init();
 			</div>
 
 			<div class="form-group">
+				<label for="wp-plugin-boilerplate-text-domain">Plugin URI</label>
+				<input type="text" class="form-control" name="wp_plugin_boilerplate_plugin_uri" placeholder="Enter the URI of the plugin">
+			</div>
+
+			<div class="form-group">
 				<label for="wp-plugin-boilerplate-slug">Plugin Slug</label>
 				<input type="text" class="form-control" id="wp-plugin-boilerplate-slug" name="wp_plugin_boilerplate_slug" placeholder="Enter the plugin slug" />
 				<span>Example 'my-plugin-is-awesome'</span>
@@ -258,12 +308,7 @@ _init();
 
 			<div class="form-group">
 				<label for="wp-plugin-boilerplate-author-uri">Author URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="Enter the uri of the author">
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-text-domain">Text Domain</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_text_domain" placeholder="Enter the Text Domain of the plugin">
+				<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="Enter the URI of the author">
 			</div>
 
 			<div class="form-group">
