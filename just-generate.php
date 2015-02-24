@@ -12,7 +12,7 @@ session_start();
 /**
  * Runs when looping through files contents, does the replacements fun stuff.
  */
-function do_replacements( $contents, $filename ) {
+function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 
 	// Replace only text files, skip png's and other stuff.
 	$valid_extensions = array( 'php', 'css', 'scss', 'js', 'txt' );
@@ -20,8 +20,8 @@ function do_replacements( $contents, $filename ) {
 	if ( ! preg_match( "/\.({$valid_extensions_regex})$/", $filename ) )
 		return $contents;
 	
-	// Special treatment for style.css
-	if ( in_array( $filename, array( 'style.css', 'style.scss' ), true ) ) {
+	// Special treatment for the main plugin file, assuming that the plugindir matches the plugin name
+	if ( $filename == ( $prototype['name'] . '.php' ) ) {
 		$plugin_headers = array(
 			'Plugin Name' => $your_plugin['name'],
 			'Plugin URI'  => esc_url_raw( $your_plugin['uri'] ),
@@ -34,40 +34,23 @@ function do_replacements( $contents, $filename ) {
 		foreach ( $plugin_headers as $key => $value ) {
 			$contents = preg_replace( '/(' . preg_quote( $key ) . ':)\s?(.+)/', '\\1 ' . $value, $contents );
 		}
-
-		$contents = preg_replace( '/\b_s\b/', $your_plugin['name'], $contents );
-
-		return $contents;
+	} else if ( $filename == 'license.txt' ) {
+		$contents = preg_replace( '/Copyright (\d\d\d\d) by the contributors/', 'Copyright ' . date( 'Y' ) . ' by ' . $your_plugin['author'], $contents );
 	}
 
-	// Special treatment for functions.php
-	/*if ( 'functions.php' == $filename ) {
-
-		if ( ! $your_plugin['wpcom'] ) {
-			// The following hack will remove the WordPress.com comment and include in functions.php.
-			$find = 'WordPress.com-specific functions';
-			$contents = preg_replace( '#/\*\*\n\s+\*\s+' . preg_quote( $find ) . '#i', '@wpcom_start', $contents );
-			$contents = preg_replace( '#/inc/wpcom\.php\';#i', '@wpcom_end', $contents );
-			$contents = preg_replace( '#@wpcom_start(.+)@wpcom_end\n?(\n\s)?#ims', '', $contents );
-		}
-	}*/
-
-	// Special treatment for footer.php
-	/*if ( 'footer.php' == $filename ) {
-		// <?php printf( __( 'Plugin: %1$s by %2$s.', '_s' ), '_s', '<a href="http://automattic.com/" rel="designer">Automattic</a>' );
-		$contents = str_replace( 'http://automattic.com/', esc_url( $your_plugin['author_uri'] ), $contents );
-		$contents = str_replace( 'Automattic', $your_plugin['author'], $contents );
-		$contents = preg_replace( "#printf\\((\\s?__\\(\\s?'Plugin:[^,]+,[^,]+,)([^,]+),#", sprintf( "printf(\\1 '%s',", esc_attr( $your_plugin['name'] ) ), $contents );
-	}*/
 
 	// Function names can not contain hyphens.
 	$slug = str_replace( '-', '_', $your_plugin['slug'] );
 
 	// Regular treatment for all other files.
-	$contents = str_replace( "_s-", sprintf( "%s-", $your_plugin['slug'] ), $contents ); // Script/style handles.
-	$contents = str_replace( "'_s'", sprintf( "'%s'", $your_plugin['slug'] ), $contents ); // Textdomains.
-	$contents = str_replace( "_s_", $slug . '_', $contents ); // Function names.
-	$contents = preg_replace( '/\b_s\b/', $your_plugin['name'], $contents );
+	$contents = str_replace( $prototype['fullname'], $your_plugin['name'], $contents ); // Generic names in licenses, etc.
+	$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
+	$contents = str_replace( 'Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+	$contents = str_replace( "'" . $prototype['name'] . "'", "'" . $your_plugin['slug'] . "'", $contents ); // Strings
+	$contents = str_replace( "\\'" . $prototype['name'] . "\\'", "\\'" . $your_plugin['slug'] . "\\'", $contents ); // Strings
+	$contents = str_replace( '"' . $prototype['name'] . '"', '"' . $your_plugin['slug'] . '"', $contents ); // Strings
+	$contents = str_replace( '\"' . $prototype['name'] . '\"', '\"' . $your_plugin['slug'] . '\"', $contents ); // Strings
+
 	return $contents;
 }
 
@@ -124,10 +107,11 @@ function _init() {
 	$prototypes_dir = dirname( __FILE__ ) . '/prototypes/';
 	$prototypes_map = array(
 		'wordpress-plugin' => array(
-			'name' => 'wordpress-plugin',
+			'id' => 'wordpress-plugin',
 			'upstream' => 'https://github.com/seb86/WordPress-Plugin-Boilerplate.git',
 			'checkout' => 'a52b6613109a2b8b773cb599c829d3775a82d6f1',
-			'plugindir' => 'wordpress-plugin-boilerplate',
+			'name' => 'wordpress-plugin-boilerplate',
+			'fullname' => 'WordPress Plugin Boilerplate',
 		),
 		// ... add the other types here
 	);
@@ -139,7 +123,7 @@ function _init() {
 	$prototype = $prototypes_map[$_REQUEST['boilerplate']];
 
 	// Update or download the boilerplate
-	$prototype_dir = $prototypes_dir . $prototype['name'] . '/';
+	$prototype_dir = $prototypes_dir . $prototype['id'] . '/';
 	if ( ! file_exists( $prototype_dir . '.git' ) ) {
 		// Let's clone it in
 		exec( sprintf( "git clone %s %s", escapeshellarg( $prototype['upstream'] ), escapeshellarg( $prototype_dir ) ), $output, $return );
@@ -157,18 +141,24 @@ function _init() {
 		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
 	}
 
-	$prototype_plugindir = $prototype_dir . $prototype['plugindir'];
+	$prototype_plugindir = $prototype_dir . $prototype['name'];
 	$iterator = new RecursiveDirectoryIterator( $prototype_plugindir );
 	foreach ( new RecursiveIteratorIterator( $iterator ) as $filename ) {
 		$local_filename = str_replace( trailingslashit( $prototype_plugindir ), '', $filename );
-		if ( in_array( $local_filename, array( '.', '..' ) ) )
+		if ( in_array( basename( $local_filename ), array( '.', '..' ) ) )
 			continue; // Skip updir traversals
 
-		if ( 'languages/' . $prototype['plugindir'] . '.pot' == $local_filename )
-			$local_filename = sprintf( 'languages/%s.pot', $your_plugin['slug'] );
-
+		// File content replacements
 		$contents = file_get_contents( $filename );
-		// $contents = do_replacements( $contents, $local_filename );
+		$contents = do_replacements( $contents, $local_filename, $your_plugin, $prototype );
+		if ( $local_filename == 'wordpress-plugin-boilerplate.php' ) {
+			echo $local_filename;
+			echo '<pre>'; echo esc_html( var_export( $contents, true ) ); die();
+		}
+
+		// Filename replacements, assuming that the prototype plugin is called the same as its directory
+		$local_filename = str_replace( $prototype['name'], $your_plugin['slug'], $local_filename );
+
 		$zip->addFromString( trailingslashit( $your_plugin['slug'] ) . $local_filename, $contents );
 	}
 
