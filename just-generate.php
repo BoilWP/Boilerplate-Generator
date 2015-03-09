@@ -7,7 +7,7 @@
  * Author:            Sébastien Dumont, Gennady Kovshenin
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       boilerplate-generator
+ * Text Domain:       boilwp
  * Domain Path:       languages
  * Network:           false
  * GitHub Plugin URI: https://github.com/BoilWP/Boilerplate-Generator
