@@ -132,11 +132,11 @@ function _init() {
 	$GIT_BIN = sprintf( 'GIT_DIR=%s.git GIT_WORK_TREE=%s git', escapeshellarg( $prototype_dir ), escapeshellarg( $prototype_dir ) );
 
 	// Checkout the needed hash, might need a pull if not exists
-	exec( sprintf( '%s reset %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
 	if ( $return ) {
 		exec( sprintf( '%s pull origin master', escapeshellarg( $GIT_BIN ) ) );
 	}
-	exec( sprintf( '%s reset %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
 	if ( $return ) {
 		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
 	}
