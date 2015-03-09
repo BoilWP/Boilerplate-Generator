@@ -118,7 +118,7 @@ function _init() {
 		'wordpress-plugin' => array(
 			'id' => 'wordpress-plugin',
 			'upstream' => 'https://github.com/seb86/WordPress-Plugin-Boilerplate.git',
-			'checkout' => 'a52b6613109a2b8b773cb599c829d3775a82d6f1',
+			'checkout' => '83de8979cfe4da11f453e44b5082f76f23dd3f72',
 			'name' => 'wordpress-plugin-boilerplate',
 			'fullname' => 'WordPress Plugin Boilerplate',
 		),
