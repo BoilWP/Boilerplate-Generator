@@ -1,8 +1,19 @@
 <?php
 /**
- * Plugin Name: Boilerplate Generator
+ * Plugin Name:       Boilerplate Generator
+ * Plugin URI:        https://github.com/BoilWP/WordPress-Plugin-Boilerplate
+ * Description:       This helps developers generate a WordPress plugin based on one of BoilWP's boilerplates.
+ * Version:           0.0.1
+ * Author:            Sébastien Dumont, Gennady Kovshenin
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       boilerplate-generator
+ * Domain Path:       languages
+ * Network:           false
+ * GitHub Plugin URI: https://github.com/BoilWP/Boilerplate-Generator
+ *
+ * @package Boilerplate Generator
  */
-
 if ( ! defined( 'ABSPATH' ) ) exit();
 
 /**
@@ -118,7 +129,7 @@ function boilerplate_generator_shortcode() {
 	$prototypes_map = array(
 		'wordpress-plugin' => array(
 			'id' => 'wordpress-plugin',
-			'upstream' => 'https://github.com/seb86/WordPress-Plugin-Boilerplate.git',
+			'upstream' => 'https://github.com/BoilWP/WordPress-Plugin-Boilerplate.git',
 			'checkout' => '83de8979cfe4da11f453e44b5082f76f23dd3f72',
 			'name' => 'wordpress-plugin-boilerplate',
 			'fullname' => 'WordPress Plugin Boilerplate',
@@ -195,243 +206,178 @@ if ( isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_bo
  */
 function boilerplate_generator_shortcode_render_form() {
 	?>
-
-	<link href="css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/jumbotron-narrow.css" rel="stylesheet">
 	<style type="text/css">
 	.advanced-control,
 	.github-branch{ display:none; }
 	</style>
 
-	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-	<!--[if lt IE 9]>
-		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-	<![endif]-->
+	<form role="form" method="post">
+		<input type="hidden" name="wp_plugin_boilerplate_generate" value="1" />
 
-	<div class="container">
-		<div class="header">
-			<ul class="nav nav-pills pull-right">
-				<li><a href="https://github.com/seb86/Boilerplate-Generator/tree/master" target="_blank">Source on GitHub</a></li>
-			</ul>
+		<div class="form-group">
+			<label for="which-boilerplate"><?php _e( 'What type of WordPress plugin are we developing?', 'boilwp' ); ?></label>
+			<div class="radio">
+				<label><input type="radio" name="boilerplate" value="wordpress-plugin" checked="checked"> <?php _e( 'WordPress Plugin', 'boilwp' ); ?></label>
+			</div>
+			<div class="radio">
+				<label><input type="radio" name="boilerplate" value="woo-extension" disabled="disabled"> <?php _e( 'WooCommerce Extension', 'boilwp' ); ?></label>
+			</div>
+			<div class="radio">
+				<label><input type="radio" name="boilerplate" value="woo-payment-gateway" disabled="disabled"> <?php _e( 'WooCommerce Payment Gateway', 'boilwp' ); ?></label>
+			</div>
 		</div>
 
-		<div class="jumbotron">
-			<h1>Welcome</h1>
-			<p class="lead">The generator will save you the time to replace all the strings within the boilerplate so that it will be ready for you to start coding the main feature of your plugin instantly.</p>
-			<span>Simply fill in your variables and a plugin will be generated for you to start coding.</p>
+		<div class="form-group plugin-size">
+			<label for="plugin-size"><?php _e( 'Are you developing a standard plugin or small plugin?', 'boilwp' ); ?></label>
+			<div class="radio">
+				<label><input type="radio" name="plugin-size" value="standard" checked="checked"> <?php _e( 'Standard', 'boilwp' ); ?></label>
+			</div>
+			<div class="radio">
+				<label><input type="radio" name="plugin-size" value="small" disabled="disabled"> <?php _e( 'Small (e.g. Widgets, Shortcodes, Custom Post Type)', 'boilwp' ); ?></label>
+			</div>
 		</div>
 
-		<form role="form" method="post">
-			<input type="hidden" name="wp_plugin_boilerplate_generate" value="1" />
-
-			<div class="form-group">
-				<label for="which-boilerplate">What type of WordPress plugin are we developing?</label>
-				<div class="radio">
-					<label><input type="radio" name="boilerplate" value="wordpress-plugin" checked="checked"> WordPress Plugin</label>
-				</div>
-				<div class="radio">
-					<label><input type="radio" name="boilerplate" value="woo-extension" disabled="disabled"> WooCommerce Extension</label>
-				</div>
-				<div class="radio">
-					<label><input type="radio" name="boilerplate" value="woo-payment-gateway" disabled="disabled"> WooCommerce Payment Gateway</label>
-				</div>
-			</div>
-
-			<div class="form-group plugin-size">
-				<label for="plugin-size">Are you developing a standard plugin or small plugin?</label>
-				<div class="radio">
-					<label><input type="radio" name="plugin-size" value="standard" checked="checked"> Standard</label>
-				</div>
-				<div class="radio">
-					<label><input type="radio" name="plugin-size" value="small" disabled="disabled"> Small (e.g. Widgets, Shortcodes, Custom Post Type)</label>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-name">Plugin Name *</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_name" placeholder="Enter the name of the plugin">
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-description">Plugin Description *</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_description" placeholder="Enter a description of the plugin">
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-text-domain">Plugin URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_plugin_uri" placeholder="Enter the URI of the plugin">
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-slug">Plugin Slug</label>
-				<input type="text" class="form-control" id="wp-plugin-boilerplate-slug" name="wp_plugin_boilerplate_slug" placeholder="Enter the plugin slug" />
-				<span>Example 'my-plugin-is-awesome'</span>
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-author">Author *</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_author" placeholder="Enter the name of the author" />
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-author-uri">Author URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="Enter the URI of the author">
-			</div>
-
-			<div class="form-group">
-				<label for="network">Network ?</label>
-				<div class="radio">
-					<label><input type="radio" name="network" value="false" checked="checked"> False</label>
-				</div>
-				<div class="radio">
-					<label><input type="radio" name="network" value="true"> True</label>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label for="network">Will your plugin be supporting GitHub updater?</label>
-				<div class="radio">
-					<label><input type="radio" name="support_github" value="no" checked="checked"> No</label>
-				</div>
-				<div class="radio">
-					<label><input type="radio" name="support_github" value="true"> Yes</label>
-				</div>
-				<span><a href="https://github.com/afragen/github-updater" target="_blank">How do I support GitHub updater?</a></span>
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-github-plugin-url">GitHub Plugin URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_github_plugin_uri" placeholder="Enter the GitHub repository this plugin will be stored at">
-			</div>
-
-			<div class="form-group">
-				<a class="advanced-options" href="#">Advanced Options</a>
-			</div>
-
-			<div class="form-group advanced-control github-branch">
-				<label for="wp-plugin-boilerplate-github_branch">GitHub Branch</label>
-				<input type="radio" name="wp_plugin_boilerplate_github_branch" value="master" checked="checked"> Master
-				<input type="radio" name="wp_plugin_boilerplate_github_branch" value="other"> Other
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_github_branch_other" style="width:200px;">
-				<span>If other, specify the branch that the GitHub updater plugin will be checking.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-min-wp-version">Minimum WordPress Version Required</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_min_wp_version" placeholder="4.0">
-				<span>Leave empty to use the latest stable version.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-memory-limit">Memory Limit</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_memory_limit" placeholder="320">
-				<span>Set the amount of memory the plugin requires for it to function. Default is 320 (320 = 32MB)</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-market-uri">Plugin Market URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_market_uri" placeholder="http://">
-				<span>Enter the url to where you are marketing this plugin.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-documentation-uri">Documentation URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_documentation_uri" placeholder="http://">
-				<span>Enter the url to where the documentation for this plugin is located.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-wp-plugin-uri">WordPress Plugin URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_wp_plugin_uri" placeholder="https://wordpress.org/plugins/your-plugin-name">
-				<span>Replace 'your-plugin-name' with the name of the plugin slug given for your wordpress repository.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-wp-plugin-support-uri">WordPress Support Plugin URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_wp_plugin_support_uri" placeholder="https://wordpress.org/support/plugin/your-plugin-name">
-				<span>Replace 'your-plugin-name' with the name of the plugin slug given for your wordpress repository.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-transifex-project-name">Transifex Project Name</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_transifex_project_name">
-				<span>Enter the name of your Transifex project. e.g. wordpress-plugin-boilerplate</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-transifex-resources-slug">Transifex Resources Slug</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_transifex_resources_slug">
-				<span>Enter the name of your Transifex resources slug. e.g. wordpress-plugin-boilerplate</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-menu-name">Menu Name</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_menu_name" placeholder="My Plugin">
-				<span>Enter the name of your plugin menu within the admin.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-title-name">Title Name</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_title_name" placeholder="My Plugin">
-				<span>Enter the title of your plugin pages within the admin.</span>
-			</div>
-
-			<div class="form-group advanced-control">
-				<label for="wp-plugin-boilerplate-manage-plugin">Level of control a user must have to control the plugin</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_manage_plugin" placeholder="manage_options" value="manage_options">
-				<span>Enter the user level that is required for the plugin to be controlled. <a href="http://codex.wordpress.org/Roles_and_Capabilities" target="_blank">See Roles and Capabilities</a> for more info.</span>
-			</div>
-
-			<div class="form-group">
-				<p class="text-center"><input class="btn btn-primary btn-lg" type="submit" name="wp_plugin_boilerplate_generate_submit" value="Generate Plugin" /></p>
-			</div>
-		</form>
-
-		<div class="footer">
-			<p>Project by <a href="http://www.sebastiendumont.com/" target="_blank">Sebastien Dumont</a> <span class="right"><?php echo date('Y'); ?></span></p>
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-name"><?php _e( 'Plugin Name', 'boilwp' ); ?> *</label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_name" placeholder="<?php _e( 'Enter the name of the plugin', 'boilwp' ); ?>">
 		</div>
 
-	</div> <!-- /container -->
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-description"><?php _e( 'Plugin Description', 'boilwp' ); ?> *</label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_description" placeholder="<?php _e( 'Enter a description of the plugin', 'boilwp' ); ?>">
+		</div>
 
-	<!-- Bootstrap core JavaScript
-	================================================== -->
-	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-text-domain"><?php _e( 'Plugin URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_plugin_uri" placeholder="<?php _e( 'Enter the URI of the plugin', 'boilwp' ); ?>">
+		</div>
+
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-slug"><?php _e( 'Plugin Slug', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" id="wp-plugin-boilerplate-slug" name="wp_plugin_boilerplate_slug" placeholder="<?php _e( 'Enter the plugin slug', 'boilwp' ); ?>" />
+			<span><?php _e( 'Example "my-plugin-is-awesome"', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-author"><?php _e( 'Author', 'boilwp' ); ?> *</label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_author" placeholder="<?php _e( 'Enter the name of the author', 'boilwp' ); ?>" />
+		</div>
+
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-author-uri"><?php _e( 'Author URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="<?php _e( 'Enter the URI of the author', 'boilwp' ); ?>">
+		</div>
+
+		<div class="form-group">
+			<label for="network"><?php _e( 'Network ?', 'boilwp' ); ?></label>
+			<div class="radio">
+				<label><input type="radio" name="network" value="false" checked="checked"> <?php _e( 'False', 'boilwp' ); ?></label>
+			</div>
+			<div class="radio">
+				<label><input type="radio" name="network" value="true"> <?php _e( 'True', 'boilwp' ); ?></label>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label for="network"><?php _e( 'Will your plugin be supporting GitHub updater?', 'boilwp' ); ?></label>
+			<div class="radio">
+				<label><input type="radio" name="support_github" value="no" checked="checked"> <?php _e( 'No', 'boilwp' ); ?></label>
+			</div>
+			<div class="radio">
+				<label><input type="radio" name="support_github" value="true"> <?php _e( 'Yes', 'boilwp' ); ?></label>
+			</div>
+			<span><a href="https://github.com/afragen/github-updater" target="_blank"><?php _e( 'How do I support GitHub updater?', 'boilwp' ); ?></a></span>
+		</div>
+
+		<div class="form-group">
+			<label for="wp-plugin-boilerplate-github-plugin-url"><?php _e( 'GitHub Plugin URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_github_plugin_uri" placeholder="<?php _e( 'Enter the GitHub repository this plugin will be stored at', 'boilwp' ); ?>">
+		</div>
+
+		<div class="form-group">
+			<a class="advanced-options" href="#"><?php _e( 'Advanced Options', 'boilwp' ); ?></a>
+		</div>
+
+		<div class="form-group advanced-control github-branch">
+			<label for="wp-plugin-boilerplate-github_branch"><?php _e( 'GitHub Branch', 'boilwp' ); ?></label>
+			<input type="radio" name="wp_plugin_boilerplate_github_branch" value="master" checked="checked"> <?php _e( 'Master', 'boilwp' ); ?>
+			<input type="radio" name="wp_plugin_boilerplate_github_branch" value="other"> <?php _e( 'Other', 'boilwp' ); ?>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_github_branch_other" style="width:200px;">
+			<span><?php _e( 'If other, specify the branch that the GitHub updater plugin will be checking.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-min-wp-version"><?php _e( 'Minimum WordPress Version Required', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_min_wp_version" placeholder="4.0">
+			<span><?php _e( 'Leave empty to use the latest stable version.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-memory-limit"><?php _e( 'Memory Limit', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_memory_limit" placeholder="320">
+			<span><?php _e( 'Set the amount of memory the plugin requires for it to function. Default is 320 (320 = 32MB)', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-market-uri"><?php _e( 'Plugin Market URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_market_uri" placeholder="http://">
+			<span><?php _e( 'Enter the url to where you are marketing this plugin.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-documentation-uri"><?php _e( 'Documentation URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_documentation_uri" placeholder="http://">
+			<span><?php _e( 'Enter the url to where the documentation for this plugin is located.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-wp-plugin-uri"><?php _e( 'WordPress Plugin URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_wp_plugin_uri" placeholder="https://wordpress.org/plugins/your-plugin-name">
+			<span><?php _e( 'Replace "your-plugin-name" with the name of the plugin slug given for your wordpress repository.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-wp-plugin-support-uri"><?php _e( 'WordPress Support Plugin URI', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_wp_plugin_support_uri" placeholder="https://wordpress.org/support/plugin/your-plugin-name">
+			<span><?php _e( 'Replace "your-plugin-name" with the name of the plugin slug given for your wordpress repository.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-transifex-project-name"><?php _e( 'Transifex Project Name', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_transifex_project_name">
+			<span><?php _e( 'Enter the name of your Transifex project. e.g. wordpress-plugin-boilerplate', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-transifex-resources-slug"><?php _e( 'Transifex Resources Slug', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_transifex_resources_slug">
+			<span><?php _e( 'Enter the name of your Transifex resources slug. e.g. wordpress-plugin-boilerplate', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-menu-name"><?php _e( 'Menu Name', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_menu_name" placeholder="<?php _e( 'My Plugin', 'boilwp' ); ?>">
+			<span><?php _e( 'Enter the name of your plugin menu within the admin.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-title-name"><?php _e( 'Title Name', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_title_name" placeholder="<?php _e( 'My Plugin', 'boilwp' ); ?>">
+			<span><?php _e( 'Enter the title of your plugin pages within the admin.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group advanced-control">
+			<label for="wp-plugin-boilerplate-manage-plugin"><?php _e( 'Level of control a user must have to control the plugin', 'boilwp' ); ?></label>
+			<input type="text" class="form-control" name="wp_plugin_boilerplate_manage_plugin" placeholder="manage_options" value="manage_options">
+			<span><?php _e( 'Enter the user level that is required for the plugin to be controlled.', 'boilwp' ); ?> <a href="http://codex.wordpress.org/Roles_and_Capabilities" target="_blank"><?php _e( 'See Roles and Capabilities</a> for more info.', 'boilwp' ); ?></span>
+		</div>
+
+		<div class="form-group">
+			<p class="text-center"><input class="btn btn-primary btn-lg" type="submit" name="wp_plugin_boilerplate_generate_submit" value="<?php _e( 'Generate Plugin', 'boilwp' ); ?>" /></p>
+		</div>
+	</form>
+
 	<script src="js/bootstrap.min.js"></script>
-	<script type="text/javascript">
-	jQuery(window).load(function(){
-		var advanced = 'hide';
-		var github_updater = 'hide';
-
-		jQuery('a.advanced-options').on('click', function(){
-
-			if( advanced == 'hide' ) {
-				jQuery('.advanced-control').show();
-				advanced = 'show';
-			}
-			else if( advanced == 'show' ) {
-				jQuery('.advanced-control').hide();
-				advanced = 'hide';
-			}
-
-			return false;
-		});
-
-		jQuery('input[type="radio"][name="support_github"]').on('click', function(){
-
-			if( github_updater == 'hide' ) {
-				jQuery('.github-branch').show();
-				github_updater = 'show';
-			}
-			else if( github_updater == 'show' ) {
-				jQuery('.github-branch').hide();
-				github_updater = 'hide';
-			}
-
-		});
-
-	});
-	</script>
+	<script src="js/boilwp-generator.js"></script>
 	<?php
 }
