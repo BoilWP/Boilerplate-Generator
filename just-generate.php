@@ -5,10 +5,6 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 require_once dirname( __FILE__ ) . '/wp-stubs.php';
 
-session_start();
-
-
-
 /**
  * Runs when looping through files contents, does the replacements fun stuff.
  */
