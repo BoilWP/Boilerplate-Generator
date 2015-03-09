@@ -1,9 +1,9 @@
 <?php
-error_reporting(E_ALL ^ E_NOTICE);
-@ini_set( 'display_errors', 'On' );
-@ini_set( 'error_reporting', E_ALL );
+/**
+ * Plugin Name: Boilerplate Generator
+ */
 
-require_once dirname( __FILE__ ) . '/wp-stubs.php';
+if ( ! defined( 'ABSPATH' ) ) exit();
 
 /**
  * Runs when looping through files contents, does the replacements fun stuff.
@@ -45,8 +45,8 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
 	$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
 
-	$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers
-	$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers
+	$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
+	$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
 
 	$contents = str_replace( 'PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
 
@@ -63,9 +63,10 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	return $contents;
 }
 
-function _init() {
-	if ( ! isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) )
-		return;
+function boilerplate_generator_shortcode() {
+	if ( ! isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) ) {
+		return boilerplate_generator_shortcode_render_form();
+	}
 
 	if ( empty( $_REQUEST['wp_plugin_boilerplate_name'] ) )
 		die( 'Please enter a plugin name. Please go back and try again.' );
@@ -177,17 +178,23 @@ function _init() {
 	die();
 }
 
-_init();
-?>
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="Generate a WordPress plugin from a professionally well-written boilerplate of your choosing, giving you the proper structure before developing the core features of your plugin.">
+/**
+ * This is where it all begins. Add [boilerplate_generator] to the page...
+ */
+add_shortcode( 'boilerplate-generator', 'boilerplate_generator_shortcode' );
+if ( isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) ) {
+	/**
+	 * We suppress all output, since we're going to be setting headers after generation
+	 * and trigger the generator manually. This is a draft alpha solution and has to be redesigned.
+	 */
+	 boilerplate_generator_shortcode();
+}
 
-	<title>Boilerplate Generator</title>
+/**
+ * Stub HTML
+ */
+function boilerplate_generator_shortcode_render_form() {
+	?>
 
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/jumbotron-narrow.css" rel="stylesheet">
@@ -201,16 +208,12 @@ _init();
 		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
-	</head>
-
-	<body>
 
 	<div class="container">
 		<div class="header">
 			<ul class="nav nav-pills pull-right">
 				<li><a href="https://github.com/seb86/Boilerplate-Generator/tree/master" target="_blank">Source on GitHub</a></li>
 			</ul>
-			<h3 class="text-muted">Boilerplate Generator</h3>
 		</div>
 
 		<div class="jumbotron">
@@ -219,7 +222,7 @@ _init();
 			<span>Simply fill in your variables and a plugin will be generated for you to start coding.</p>
 		</div>
 
-		<form role="form" method="post" action="just-generate.php">
+		<form role="form" method="post">
 			<input type="hidden" name="wp_plugin_boilerplate_generate" value="1" />
 
 			<div class="form-group">
@@ -430,5 +433,5 @@ _init();
 
 	});
 	</script>
-	</body>
-</html>
+	<?php
+}
