@@ -1,23 +1,23 @@
 <?php
-error_reporting(E_ALL ^ E_NOTICE);
-@ini_set( 'display_errors', 'On' );
-@ini_set( 'error_reporting', E_ALL );
+/**
+ * Plugin Name: Boilerplate Generator
+ */
 
-session_start();
+if ( ! defined( 'ABSPATH' ) ) exit();
 
 /**
  * Runs when looping through files contents, does the replacements fun stuff.
  */
-function do_replacements( $contents, $filename ) {
+function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 
 	// Replace only text files, skip png's and other stuff.
 	$valid_extensions = array( 'php', 'css', 'scss', 'js', 'txt' );
 	$valid_extensions_regex = implode( '|', $valid_extensions );
 	if ( ! preg_match( "/\.({$valid_extensions_regex})$/", $filename ) )
 		return $contents;
-
-	// Special treatment for style.css
-	if ( in_array( $filename, array( 'style.css', 'style.scss' ), true ) ) {
+	
+	// Special treatment for the main plugin file, assuming that the plugindir matches the plugin name
+	if ( $filename == ( $prototype['name'] . '.php' ) ) {
 		$plugin_headers = array(
 			'Plugin Name' => $your_plugin['name'],
 			'Plugin URI'  => esc_url_raw( $your_plugin['uri'] ),
@@ -31,45 +31,42 @@ function do_replacements( $contents, $filename ) {
 			$contents = preg_replace( '/(' . preg_quote( $key ) . ':)\s?(.+)/', '\\1 ' . $value, $contents );
 		}
 
-		$contents = preg_replace( '/\b_s\b/', $your_plugin['name'], $contents );
-
-		return $contents;
+		$contents = preg_replace( '/(public $web_url =).*/', "\\1 '" . $your_plugin['uri'] . "';", $contents ); // Plugin slug
+	} else if ( $filename == 'license.txt' ) {
+		$contents = preg_replace( '/Copyright (\d\d\d\d) by the contributors/', 'Copyright ' . date( 'Y' ) . ' by ' . $your_plugin['author'], $contents );
 	}
 
-	// Special treatment for functions.php
-	/*if ( 'functions.php' == $filename ) {
-
-		if ( ! $your_plugin['wpcom'] ) {
-			// The following hack will remove the WordPress.com comment and include in functions.php.
-			$find = 'WordPress.com-specific functions';
-			$contents = preg_replace( '#/\*\*\n\s+\*\s+' . preg_quote( $find ) . '#i', '@wpcom_start', $contents );
-			$contents = preg_replace( '#/inc/wpcom\.php\';#i', '@wpcom_end', $contents );
-			$contents = preg_replace( '#@wpcom_start(.+)@wpcom_end\n?(\n\s)?#ims', '', $contents );
-		}
-	}*/
-
-	// Special treatment for footer.php
-	/*if ( 'footer.php' == $filename ) {
-		// <?php printf( __( 'Plugin: %1$s by %2$s.', '_s' ), '_s', '<a href="http://automattic.com/" rel="designer">Automattic</a>' );
-		$contents = str_replace( 'http://automattic.com/', esc_url( $your_plugin['author_uri'] ), $contents );
-		$contents = str_replace( 'Automattic', $your_plugin['author'], $contents );
-		$contents = preg_replace( "#printf\\((\\s?__\\(\\s?'Plugin:[^,]+,[^,]+,)([^,]+),#", sprintf( "printf(\\1 '%s',", esc_attr( $your_plugin['name'] ) ), $contents );
-	}*/
 
 	// Function names can not contain hyphens.
 	$slug = str_replace( '-', '_', $your_plugin['slug'] );
 
-	// Regular treatment for all other files.
-	$contents = str_replace( "_s-", sprintf( "%s-", $your_plugin['slug'] ), $contents ); // Script/style handles.
-	$contents = str_replace( "'_s'", sprintf( "'%s'", $your_plugin['slug'] ), $contents ); // Textdomains.
-	$contents = str_replace( "_s_", $slug . '_', $contents ); // Function names.
-	$contents = preg_replace( '/\b_s\b/', $your_plugin['name'], $contents );
+	$contents = str_replace( $prototype['fullname'], $your_plugin['name'], $contents ); // Generic names in licenses, etc.
+
+	$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
+	$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
+
+	$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
+	$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
+
+	$contents = str_replace( 'PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
+
+	$contents = str_replace( 'Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+
+	$contents = str_replace( "'" . $prototype['name'] . "'", "'" . $your_plugin['slug'] . "'", $contents ); // Strings
+	$contents = str_replace( "\\'" . $prototype['name'] . "\\'", "\\'" . $your_plugin['slug'] . "\\'", $contents ); // Strings
+	$contents = str_replace( '"' . $prototype['name'] . '"', '"' . $your_plugin['slug'] . '"', $contents ); // Strings
+	$contents = str_replace( '\"' . $prototype['name'] . '\"', '\"' . $your_plugin['slug'] . '\"', $contents ); // Strings
+
+	$contents = preg_replace( '/.*@todo.*/', '', $contents ); // Remove @todo statements
+	$contents = preg_replace( '/(.*@author).*/', sprintf( '\\1 %s', $your_plugin['author'] ), $contents ); // Change package authorship
+
 	return $contents;
 }
 
-function _init() {
-	if ( ! isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) )
-		return;
+function boilerplate_generator_shortcode() {
+	if ( ! isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) ) {
+		return boilerplate_generator_shortcode_render_form();
+	}
 
 	if ( empty( $_REQUEST['wp_plugin_boilerplate_name'] ) )
 		die( 'Please enter a plugin name. Please go back and try again.' );
@@ -85,11 +82,11 @@ function _init() {
 	);
 
 	$your_plugin['name']  = trim( $_REQUEST['wp_plugin_boilerplate_name'] );
-	$your_plugin['slug']  = sanitize_title_with_dashes( $your_plugin['name'] );
-	//$your_plugin['wpcom'] = (bool) isset( $_REQUEST['can_i_haz_wpcom'] );
 
 	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_slug'] ) ) {
 		$your_plugin['slug'] = sanitize_title_with_dashes( $_REQUEST['wp_plugin_boilerplate_slug'] );
+	} else {
+		$your_plugin['slug']  = sanitize_title_with_dashes( $your_plugin['name'] );
 	}
 
 	// Let's check if the slug can be a valid function name.
@@ -101,6 +98,10 @@ function _init() {
 		$your_plugin['description'] = trim( $_REQUEST['wp_plugin_boilerplate_description'] );
 	}
 
+	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_plugin_uri'] ) ) {
+		$your_plugin['uri'] = trim( $_REQUEST['wp_plugin_boilerplate_plugin_uri'] );
+	}
+
 	if ( ! empty( $_REQUEST['wp_plugin_boilerplate_author'] ) ) {
 		$your_plugin['author'] = trim( $_REQUEST['wp_plugin_boilerplate_author'] );
 	}
@@ -109,56 +110,66 @@ function _init() {
 		$your_plugin['author_uri'] = trim( $_REQUEST['wp_plugin_boilerplate_author_uri'] );
 	}
 
-	//$zip = new ZipArchive;
-	//$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
-	//$res = $zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
+	$zip = new ZipArchive;
+	$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
+	$zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
 
-	$prototype_dir = dirname( __FILE__ ) . '/prototype/';
-
-	// These files are excluded when the boilerplate is generated.
-	$exclude_files = array(
-		'.editorconfig',
-		'.gitattributes',
-		'.gitignore',
-		'.jshintrc',
-		'.travis.yml',
-		'CHANGELOG.md',
-		'composer.json',
-		'CONTRIBUTING.md',
-		'Gruntfile.js',
-		'license.txt',
-		'package.json',
-		'README.md',
-		'.git',
-		'.tx',
-		'.DS_Store',
-		'.',
-		'..'
+	$prototypes_dir = dirname( __FILE__ ) . '/prototypes/';
+	$prototypes_map = array(
+		'wordpress-plugin' => array(
+			'id' => 'wordpress-plugin',
+			'upstream' => 'https://github.com/seb86/WordPress-Plugin-Boilerplate.git',
+			'checkout' => '83de8979cfe4da11f453e44b5082f76f23dd3f72',
+			'name' => 'wordpress-plugin-boilerplate',
+			'fullname' => 'WordPress Plugin Boilerplate',
+		),
+		// ... add the other types here
 	);
 
-	// These directories are excluded when the boilerplate is generated.
-	$exclude_directories = array( '.git', '.tx', 'bin', '.', '..' );
-
-	$iterator = new RecursiveDirectoryIterator( $prototype_dir );
-	foreach ( new RecursiveIteratorIterator( $iterator ) as $filename ) {
-		if ( in_array( basename( $filename ), $exclude_files ) )
-			continue;
-
-		foreach ( $exclude_directories as $directory )
-			if ( strstr( $filename, "/{$directory}/" ) )
-				continue 2; // continue the parent foreach loop
-
-		$local_filename = str_replace( trailingslashit( $prototype_dir ), '', $filename );
-
-		if ( 'languages/_s.pot' == $local_filename )
-			$local_filename = sprintf( 'languages/%s.pot', $your_plugin['slug'] );
-
-		$contents = file_get_contents( $filename );
-		$contents = do_replacements( $contents, $local_filename );
-		//$zip->addFromString( trailingslashit( $your_plugin['slug'] ) . $local_filename, $contents );
+	if ( empty( $_REQUEST['boilerplate'] ) || empty( $prototypes_map[$_REQUEST['boilerplate']] ) ) {
+		die( 'Invalid boilerplate type. Please go back and try again.' );
 	}
 
-	//$zip->close();
+	$prototype = $prototypes_map[$_REQUEST['boilerplate']];
+
+	// Update or download the boilerplate
+	$prototype_dir = $prototypes_dir . $prototype['id'] . '/';
+	if ( ! file_exists( $prototype_dir . '.git' ) ) {
+		// Let's clone it in
+		exec( sprintf( "git clone %s %s", escapeshellarg( $prototype['upstream'] ), escapeshellarg( $prototype_dir ) ), $output, $return );
+	}
+
+	$GIT_BIN = sprintf( 'GIT_DIR=%s.git GIT_WORK_TREE=%s git', escapeshellarg( $prototype_dir ), escapeshellarg( $prototype_dir ) );
+
+	// Checkout the needed hash, might need a pull if not exists
+	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	if ( $return ) {
+		exec( sprintf( '%s pull origin master', escapeshellarg( $GIT_BIN ) ) );
+	}
+	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	if ( $return ) {
+		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
+	}
+
+	$prototype_plugindir = $prototype_dir . $prototype['name'];
+	$iterator = new RecursiveDirectoryIterator( $prototype_plugindir );
+	foreach ( new RecursiveIteratorIterator( $iterator ) as $filename ) {
+		$local_filename = str_replace( trailingslashit( $prototype_plugindir ), '', $filename );
+		if ( in_array( basename( $local_filename ), array( '.', '..' ) ) )
+			continue; // Skip updir traversals
+
+		// File content replacements
+		$contents = file_get_contents( $filename );
+		$contents = do_replacements( $contents, $local_filename, $your_plugin, $prototype );
+
+		// Filename replacements, assuming that the prototype plugin is called the same as its directory
+		$local_filename = str_replace( $prototype['name'], $your_plugin['slug'], $local_filename );
+		$local_filename = str_replace( 'plugin-name', $your_plugin['slug'], $local_filename );
+
+		$zip->addFromString( trailingslashit( $your_plugin['slug'] ) . $local_filename, $contents );
+	}
+
+	$zip->close();
 
 	header( 'Content-type: application/zip' );
 	header( sprintf( 'Content-Disposition: attachment; filename="%s.zip"', $your_plugin['slug'] ) );
@@ -167,17 +178,23 @@ function _init() {
 	die();
 }
 
-_init();
-?>
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="Generate a WordPress plugin from a professionally well-written boilerplate of your choosing, giving you the proper structure before developing the core features of your plugin.">
+/**
+ * This is where it all begins. Add [boilerplate_generator] to the page...
+ */
+add_shortcode( 'boilerplate-generator', 'boilerplate_generator_shortcode' );
+if ( isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) ) {
+	/**
+	 * We suppress all output, since we're going to be setting headers after generation
+	 * and trigger the generator manually. This is a draft alpha solution and has to be redesigned.
+	 */
+	 boilerplate_generator_shortcode();
+}
 
-	<title>Boilerplate Generator</title>
+/**
+ * Stub HTML
+ */
+function boilerplate_generator_shortcode_render_form() {
+	?>
 
 	<link href="css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/jumbotron-narrow.css" rel="stylesheet">
@@ -191,16 +208,12 @@ _init();
 		<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 		<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
-	</head>
-
-	<body>
 
 	<div class="container">
 		<div class="header">
 			<ul class="nav nav-pills pull-right">
 				<li><a href="https://github.com/seb86/Boilerplate-Generator/tree/master" target="_blank">Source on GitHub</a></li>
 			</ul>
-			<h3 class="text-muted">Boilerplate Generator</h3>
 		</div>
 
 		<div class="jumbotron">
@@ -209,11 +222,11 @@ _init();
 			<span>Simply fill in your variables and a plugin will be generated for you to start coding.</p>
 		</div>
 
-		<form role="form" method="post" action="just-generate.php">
+		<form role="form" method="post">
 			<input type="hidden" name="wp_plugin_boilerplate_generate" value="1" />
 
 			<div class="form-group">
-				<label for="which-boilerpate">What type of WordPress plugin are we developing?</label>
+				<label for="which-boilerplate">What type of WordPress plugin are we developing?</label>
 				<div class="radio">
 					<label><input type="radio" name="boilerplate" value="wordpress-plugin" checked="checked"> WordPress Plugin</label>
 				</div>
@@ -246,6 +259,11 @@ _init();
 			</div>
 
 			<div class="form-group">
+				<label for="wp-plugin-boilerplate-text-domain">Plugin URI</label>
+				<input type="text" class="form-control" name="wp_plugin_boilerplate_plugin_uri" placeholder="Enter the URI of the plugin">
+			</div>
+
+			<div class="form-group">
 				<label for="wp-plugin-boilerplate-slug">Plugin Slug</label>
 				<input type="text" class="form-control" id="wp-plugin-boilerplate-slug" name="wp_plugin_boilerplate_slug" placeholder="Enter the plugin slug" />
 				<span>Example 'my-plugin-is-awesome'</span>
@@ -258,12 +276,7 @@ _init();
 
 			<div class="form-group">
 				<label for="wp-plugin-boilerplate-author-uri">Author URI</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="Enter the uri of the author">
-			</div>
-
-			<div class="form-group">
-				<label for="wp-plugin-boilerplate-text-domain">Text Domain</label>
-				<input type="text" class="form-control" name="wp_plugin_boilerplate_text_domain" placeholder="Enter the Text Domain of the plugin">
+				<input type="text" class="form-control" name="wp_plugin_boilerplate_author_uri" placeholder="Enter the URI of the author">
 			</div>
 
 			<div class="form-group">
@@ -420,5 +433,5 @@ _init();
 
 	});
 	</script>
-	</body>
-</html>
+	<?php
+}
