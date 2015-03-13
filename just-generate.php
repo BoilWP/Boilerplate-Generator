@@ -56,6 +56,9 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
 	$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
 
+	$contents = preg_replace( '/(.*)\$GLOBALS\[.plugin_name.\](.*)/', '\\1$GLOBALS["' . $slug . '"]\\2', $contents ); // Global array indices.
+	$contents = preg_replace( '/(.*)\$plugin_name(.*)/', '\\1$' . $slug . '\\2', $contents ); // Global variable names.
+
 	$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
 	$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
 
