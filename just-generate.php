@@ -75,8 +75,8 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	$contents = preg_replace( '/(.*@author).*/', sprintf( '\\1 %s', $your_plugin['author'] ), $contents ); // Change package authorship
 
 	// Cleanup double empty lines
-	$contents = str_replace( "\r\n\r\n", "\r\n", $contents );
-	$contents = str_replace( "\n\n", "\n", $contents );
+	$contents = preg_replace( "#^(\r\n)+#m", "\r\n", $contents );
+	$contents = preg_replace( "#^\n+#m", "\n", $contents );
 
 	return $contents;
 }
