@@ -99,7 +99,7 @@ function boilerplate_generator_shortcode() {
 	// Checkout the needed hash, might need a pull if not exists
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
 	if ( $return ) {
-		exec( sprintf( '%s pull origin master', escapeshellarg( $GIT_BIN ) ) );
+		exec( sprintf( '%s fetch --all', escapeshellarg( $GIT_BIN ) ) );
 	}
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
 	if ( $return ) {
