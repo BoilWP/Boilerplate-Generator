@@ -89,30 +89,30 @@ function boilerplate_generator_shortcode() {
 
 	// Update or download the boilerplate
 	$prototype_dir = $prototypes_dir . $prototype['id'] . '/';
+
 	if ( ! file_exists( $prototype_dir . '.git' ) ) {
 		// Let's clone it in
 		exec( sprintf( "git clone %s %s", escapeshellarg( $prototype['upstream'] ), escapeshellarg( $prototype_dir ) ), $output, $return );
-		var_dump( $output );
 	}
 
 	$GIT_BIN = sprintf( 'GIT_DIR=%s.git GIT_WORK_TREE=%s git', escapeshellarg( $prototype_dir ), escapeshellarg( $prototype_dir ) );
 
 	// Checkout the needed hash, might need a pull if not exists
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
-	var_dump( $output );
+
 	if ( $return ) {
 		exec( sprintf( '%s fetch --all', escapeshellarg( $GIT_BIN ) ) );
-		var_dump( $output );
 	}
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
-	var_dump( $output );
 
 	if ( $return ) {
 		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
 	}
 
 	$prototype_plugindir = $prototype_dir . $prototype['name'];
+
 	$iterator = new RecursiveDirectoryIterator( $prototype_plugindir );
+
 	foreach ( new RecursiveIteratorIterator( $iterator ) as $filename ) {
 		$local_filename = str_replace( trailingslashit( $prototype_plugindir ), '', $filename );
 		if ( in_array( basename( $local_filename ), array( '.', '..' ) ) )
