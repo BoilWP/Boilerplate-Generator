@@ -78,11 +78,11 @@ function boilerplate_generator_shortcode() {
 		die( __( 'Invalid plugin size. Please go back and try again.', 'boilwp' ) );
 	}
 
-	if ( empty( $_REQUEST['plugin-size']['boilerplate'] ) || empty( $prototypes_map[$_REQUEST['plugin-size']['boilerplate']] ) ) {
+	if ( empty( $_REQUEST['boilerplate'] ) || empty( $prototypes_map[$_REQUEST['boilerplate']] ) ) {
 		die( __( 'Invalid boilerplate type. Please go back and try again.', 'boilwp' ) );
 	}
 
-	$prototype = $prototypes_map[$_REQUEST['plugin-size']['boilerplate']];
+	$prototype = $prototypes_map[$_REQUEST['boilerplate']];
 
 	// Update or download the boilerplate
 	$prototype_dir = $prototypes_dir . $prototype['id'] . '/';
