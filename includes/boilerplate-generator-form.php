@@ -66,7 +66,7 @@ function boilerplate_generator_shortcode() {
 			'wordpress-plugin-light' => array(
 				'id' => 'wordpress-plugin-light',
 				'upstream' => 'https://github.com/BoilWP/WordPress-Plugin-Boilerplate-Light.git',
-				'checkout' => '83de8979cfe4da11f453e44b5082f76f23dd3f72',
+				'checkout' => '72e7fb2c8daa1fecd2c83472ce4c524063231116',
 				'name' => 'wordpress-plugin-boilerplate-light',
 				'fullname' => 'WordPress Plugin Boilerplate Light',
 			),
@@ -74,15 +74,18 @@ function boilerplate_generator_shortcode() {
 		// ... add the other types here
 	);
 
-	if ( empty( $_REQUEST['plugin-size'] ) || empty( $prototypes_map[$_REQUEST['plugin-size']] ) ) {
+	if ( empty( $_REQUEST['plugin-size'] ) ) {
 		die( __( 'Invalid plugin size. Please go back and try again.', 'boilwp' ) );
 	}
 
-	if ( empty( $_REQUEST['boilerplate'] ) || empty( $prototypes_map[$_REQUEST['boilerplate']] ) ) {
+	if ( empty( $_REQUEST['boilerplate'] ) ) {
 		die( __( 'Invalid boilerplate type. Please go back and try again.', 'boilwp' ) );
 	}
 
-	$prototype = $prototypes_map[$_REQUEST['boilerplate']];
+	$plugin_size = trim( $_REQUEST['plugin-size'] );
+	$boilerplate = trim( $_REQUEST['boilerplate'] );
+
+	$prototype = $prototypes_map[$plugin_size][$boilerplate];
 
 	// Update or download the boilerplate
 	$prototype_dir = $prototypes_dir . $prototype['id'] . '/';
