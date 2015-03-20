@@ -139,6 +139,13 @@ function boilerplate_generator_shortcode() {
 }
 
 add_shortcode( 'boilerplate-generator', 'boilerplate_generator_shortcode' );
+if ( isset( $_REQUEST['wp_plugin_boilerplate_generate'], $_REQUEST['wp_plugin_boilerplate_name'] ) ) {
+	/**
+	* We suppress all output, since we're going to be setting headers after generation
+	* and trigger the generator manually. This is a draft alpha solution and has to be redesigned.
+	*/
+	boilerplate_generator_shortcode();
+}
 
 function boilerplate_generator_form() {
 	?>
