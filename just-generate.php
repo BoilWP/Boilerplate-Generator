@@ -4,7 +4,7 @@
  * Plugin URI:        https://github.com/BoilWP/Boilerplate-Generator
  * Description:       This helps developers generate a WordPress plugin based on one of BoilWP's boilerplates.
  * Version:           0.0.2
- * Author:            Sébastien Dumont, Gennady Kovshenin
+ * Author:            SÃ©bastien Dumont, Gennady Kovshenin
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       boilwp
@@ -81,7 +81,7 @@ final class Boilerplate_Generator {
 	 */
 	public function __clone() {
 		// Cloning instances of the class is forbidden
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'wordpress-plugin-boilerplate-light' ), $this->version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'boilwp' ), $this->version );
 	} // END __clone()
 
 	/**
@@ -93,7 +93,7 @@ final class Boilerplate_Generator {
 	 */
 	public function __wakeup() {
 		// Unserializing instances of the class is forbidden
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'wordpress-plugin-boilerplate-light' ), $this->version );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'boilwp' ), $this->version );
 	} // END __wakeup()
 
 	/**
@@ -173,7 +173,7 @@ final class Boilerplate_Generator {
 	 */
 	public function load_plugin_textdomain() {
 		// Set filter for plugin's languages directory
-		$lang_dir = dirname( plugin_basename( PLUGIN_NAME_FILE ) ) . '/languages/';
+		$lang_dir = dirname( plugin_basename( BOILWP_FILE ) ) . '/languages/';
 		$lang_dir = apply_filters( 'boilerplate_generator_languages_directory', $lang_dir );
 
 		// Traditional WordPress plugin locale filter
