@@ -51,7 +51,7 @@ function boilerplate_generator_shortcode() {
 	$zip_filename = sprintf( '/tmp/wp-plugin-boilerplate-%s.zip', md5( print_r( $your_plugin, true ) ) );
 	$zip->open( $zip_filename, ZipArchive::CREATE && ZipArchive::OVERWRITE );
 
-	$prototypes_dir = dirname( __FILE__ ) . '/prototypes/';
+	$prototypes_dir = dirname( dirname( __FILE__ ) ) . '/prototypes/';
 	$prototypes_map = array(
 		'standard' => array(
 			'wordpress-plugin' => array(
@@ -92,16 +92,21 @@ function boilerplate_generator_shortcode() {
 	if ( ! file_exists( $prototype_dir . '.git' ) ) {
 		// Let's clone it in
 		exec( sprintf( "git clone %s %s", escapeshellarg( $prototype['upstream'] ), escapeshellarg( $prototype_dir ) ), $output, $return );
+		var_dump( $output );
 	}
 
 	$GIT_BIN = sprintf( 'GIT_DIR=%s.git GIT_WORK_TREE=%s git', escapeshellarg( $prototype_dir ), escapeshellarg( $prototype_dir ) );
 
 	// Checkout the needed hash, might need a pull if not exists
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	var_dump( $output );
 	if ( $return ) {
 		exec( sprintf( '%s fetch --all', escapeshellarg( $GIT_BIN ) ) );
+		var_dump( $output );
 	}
 	exec( sprintf( '%s reset --hard %s', $GIT_BIN, escapeshellarg( $prototype['checkout'] ) ), $output, $return );
+	var_dump( $output );
+
 	if ( $return ) {
 		die( 'Could not retrieve the necessary tree from ' . esc_html( $prototype['upstream'] ) );
 	}
