@@ -63,7 +63,7 @@ function boilerplate_generator_shortcode() {
 			),
 		),
 		'small' => array(
-			'wordpress-plugin-light' => array(
+			'wordpress-plugin' => array(
 				'id' => 'wordpress-plugin-light',
 				'upstream' => 'https://github.com/BoilWP/WordPress-Plugin-Boilerplate-Light.git',
 				'checkout' => '72e7fb2c8daa1fecd2c83472ce4c524063231116',
