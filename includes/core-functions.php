@@ -46,7 +46,7 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 
 	$contents = str_replace( 'PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
 
-	$contents = str_replace( 'Boilerplate_Generator', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+	$contents = str_replace( 'Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
 
 	$contents = str_replace( "'" . $prototype['name'] . "'", "'" . $your_plugin['slug'] . "'", $contents ); // Strings
 	$contents = str_replace( "\\'" . $prototype['name'] . "\\'", "\\'" . $your_plugin['slug'] . "\\'", $contents ); // Strings
