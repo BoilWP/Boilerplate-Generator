@@ -13,12 +13,15 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	// Special treatment for the main plugin file, assuming that the plugindir matches the plugin name
 	if ( $filename == ( $prototype['name'] . '.php' ) ) {
 		$plugin_headers = array(
-			'Plugin Name' => $your_plugin['name'],
-			'Plugin URI'  => esc_url_raw( $your_plugin['uri'] ),
-			'Author'      => $your_plugin['author'],
-			'Author URI'  => esc_url_raw( $your_plugin['author_uri'] ),
-			'Description' => $your_plugin['description'],
-			'Text Domain' => $your_plugin['slug'],
+			'Plugin Name'       => $your_plugin['name'],
+			'Plugin URI'        => esc_url_raw( $your_plugin['uri'] ),
+			'Description'       => $your_plugin['description'],
+			'Version'           => '1.0.0', // Reset the plugin version.
+			'Author'            => $your_plugin['author'],
+			'Author URI'        => esc_url_raw( $your_plugin['author_uri'] ),
+			'Text Domain'       => $your_plugin['slug'],
+			'Network'           => $your_plugin['network'],
+			'GitHub Plugin URI' => $your_plugin['github_uri'],
 		);
 
 		foreach ( $plugin_headers as $key => $value ) {
@@ -35,19 +38,60 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 
 	$contents = str_replace( $prototype['fullname'], $your_plugin['name'], $contents ); // Generic names in licenses, etc.
 
-	$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
-	$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
+	switch( $prototype['name'] ) {
+		case 'wordpress-plugin-boilerplate' :
+			$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
+			$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
 
-	$contents = preg_replace( '/(.*)\$GLOBALS\[.plugin_name.\](.*)/', '\\1$GLOBALS["' . $slug . '"]\\2', $contents ); // Global array indices.
-	$contents = preg_replace( '/(.*)\$plugin_name(.*)/', '\\1$' . $slug . '\\2', $contents ); // Global variable names.
+			$contents = preg_replace( '/(.*)\$GLOBALS\[.plugin_name.\](.*)/', '\\1$GLOBALS["' . $slug . '"]\\2', $contents ); // Global array indices.
+			$contents = preg_replace( '/(.*)\$plugin_name(.*)/', '\\1$' . $slug . '\\2', $contents ); // Global variable names.
 
-	$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
-	$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
+			$contents = str_replace( 'plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
+			$contents = str_replace( 'plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
 
-	$contents = str_replace( 'PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
+			$contents = str_replace( 'PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
 
-	$contents = str_replace( 'Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+			$contents = str_replace( 'Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+		break;
 
+		case 'woocommerce-payment-gateway-boilerplate' :
+			$contents = str_replace( 'woocommerce_payment_gateway_boilerplate_', $slug . '_', $contents ); // Function names.
+			$contents = str_replace( '_woocommerce_payment_gateway_boilerplate', '_' . $slug, $contents ); // Function names.
+
+			$contents = preg_replace( '/(.*)\$GLOBALS\[.woocommerce_payment_gateway_boilerplate.\](.*)/', '\\1$GLOBALS["' . $slug . '"]\\2', $contents ); // Global array indices.
+			$contents = preg_replace( '/(.*)\$woocommerce_payment_gateway_boilerplate(.*)/', '\\1$' . $slug . '\\2', $contents ); // Global variable names.
+
+			$contents = str_replace( 'woocommerce_payment_gateway_boilerplate', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
+			$contents = str_replace( 'woocommerce-payment-gateway-boilerplate', $your_plugin['slug'], $contents ); // Filename identifiers.
+
+			$contents = str_replace( 'WC_Gateway_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+		break;
+
+		case 'wordpress-plugin-boilerplate-light' :
+		break;
+
+		case 'woocommerce-extension-boilerplate' :
+		break;
+
+		case 'woocommerce-extension-boilerplate-light' :
+			$contents = str_replace( 'wc_extend_plugin_name_', $slug . '_', $contents ); // Function names.
+			$contents = str_replace( '_wc_extend_plugin_name', '_' . $slug, $contents ); // Function names.
+
+			$contents = preg_replace( '/(.*)\$GLOBALS\[.wc_extend_plugin_name.\](.*)/', '\\1$GLOBALS["' . $slug . '"]\\2', $contents ); // Global array indices.
+			$contents = preg_replace( '/(.*)\$wc_extend_plugin_name(.*)/', '\\1$' . $slug . '\\2', $contents ); // Global variable names.
+
+			$contents = str_replace( 'wc_extend_plugin_name', $your_plugin['slug'], $contents ); // Miscellaneous strings and identifiers.
+			$contents = str_replace( 'wc-extension-plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
+			$contents = str_replace( 'woocommerce-extension-plugin-name', $your_plugin['slug'], $contents ); // Filename identifiers.
+
+			$contents = str_replace( 'WC_EXTEND_', strtoupper( $slug ), $contents ); // Definition names.
+			$contents = str_replace( 'WC_EXTEND_PLUGIN_NAME', strtoupper( $slug ), $contents ); // Definition names.
+
+			$contents = str_replace( 'WC_Extend_Plugin_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
+		break;
+	} // END switch()
+
+	// General String Replacing
 	$contents = str_replace( "'" . $prototype['name'] . "'", "'" . $your_plugin['slug'] . "'", $contents ); // Strings
 	$contents = str_replace( "\\'" . $prototype['name'] . "\\'", "\\'" . $your_plugin['slug'] . "\\'", $contents ); // Strings
 	$contents = str_replace( '"' . $prototype['name'] . '"', '"' . $your_plugin['slug'] . '"', $contents ); // Strings
@@ -57,8 +101,8 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 	$contents = preg_replace( '/(.*@author).*/', sprintf( '\\1 %s', $your_plugin['author'] ), $contents ); // Change package authorship
 
 	// Cleanup double empty lines
-	$contents = str_replace( "\r\n\r\n", "\r\n", $contents );
-	$contents = str_replace( "\n\n", "\n", $contents );
+	//$contents = str_replace( "\r\n\r\n", "\r\n", $contents );
+	//$contents = str_replace( "\n\n", "\n", $contents );
 
 	return $contents;
 }

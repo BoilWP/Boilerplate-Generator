@@ -3,7 +3,7 @@
  * Plugin Name:       Boilerplate Generator
  * Plugin URI:        https://github.com/BoilWP/Boilerplate-Generator
  * Description:       This helps developers generate a WordPress plugin based on one of BoilWP's boilerplates.
- * Version:           0.0.2
+ * Version:           0.0.3
  * Author:            Sébastien Dumont, Gennady Kovshenin
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
@@ -44,13 +44,22 @@ final class Boilerplate_Generator {
 	public $plugin_slug = 'boilwp_generator';
 
 	/**
+	 * Text Domain
+	 *
+	 * @since  0.0.3
+	 * @access public
+	 * @var    string
+	 */
+	public $text_domain = 'boilwp';
+
+	/**
 	 * The Plugin Version.
 	 *
 	 * @since  0.0.2
 	 * @access public
 	 * @var    string
 	 */
-	public $version = "0.0.2";
+	public $version = "0.0.3";
 
 	/**
 	 * Main Boilerplate Generator Instance
@@ -118,6 +127,7 @@ final class Boilerplate_Generator {
 	 * @access private
 	 */
 	private function define_constants() {
+		if ( ! defined( 'BOILWP_FILE' ) )        define( 'BOILWP_FILE', __FILE__ );
 		if ( ! defined( 'BOILWP_SLUG' ) )        define( 'BOILWP_SLUG', $this->plugin_slug );
 
 		if ( ! defined( 'BOILWP_VERSION' ) )     define( 'BOILWP_VERSION', $this->version );
@@ -153,7 +163,8 @@ final class Boilerplate_Generator {
 	 * @access public
 	 */
 	public function include_functions() {
-		if ( !is_admin() ) {
+		if ( ! is_admin() ) {
+			include_once( $this->plugin_path() . '/includes/current-checkouts.php' );
 			include_once( $this->plugin_path() . '/includes/core-functions.php' );
 			include_once( $this->plugin_path() . '/includes/boilerplate-generator-form.php' );
 		}
