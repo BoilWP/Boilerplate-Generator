@@ -40,6 +40,7 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 
 	switch( $prototype['name'] ) {
 		case 'wordpress-plugin-boilerplate' :
+		case 'wordpress-plugin-boilerplate-light' :
 			$contents = str_replace( 'plugin_name_', $slug . '_', $contents ); // Function names.
 			$contents = str_replace( '_plugin_name', '_' . $slug, $contents ); // Function names.
 
@@ -67,12 +68,7 @@ function do_replacements( $contents, $filename, $your_plugin, $prototype ) {
 			$contents = str_replace( 'WC_Gateway_Name', implode( '_', array_map( 'ucfirst', explode( '-', $your_plugin['slug'] ) ) ), $contents ); // Classes, etc.
 		break;
 
-		case 'wordpress-plugin-boilerplate-light' :
-		break;
-
 		case 'woocommerce-extension-boilerplate' :
-		break;
-
 		case 'woocommerce-extension-boilerplate-light' :
 			$contents = str_replace( 'wc_extend_plugin_name_', $slug . '_', $contents ); // Function names.
 			$contents = str_replace( '_wc_extend_plugin_name', '_' . $slug, $contents ); // Function names.

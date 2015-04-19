@@ -9,7 +9,7 @@
 define( 'BOILWP_WP_PLUGIN_CHECKOUT',           '83de8979cfe4da11f453e44b5082f76f23dd3f72' );
 
 // WordPress Plugin Boilerplate Light
-define( 'BOILWP_WP_PLUGIN_LIGHT_CHECKOUT',     '72e7fb2c8daa1fecd2c83472ce4c524063231116' );
+define( 'BOILWP_WP_PLUGIN_LIGHT_CHECKOUT',     '3258d959986d02a65060e7bb7867c777bb2caa34' );
 
 // WooCommerce Payment Gateway Boilerplate
 define( 'BOILWP_WOO_PAYMENT_GATEWAY_CHECKOUT', '1112be024f1d211cec660d8232ca3731e9a7c9d7' );
